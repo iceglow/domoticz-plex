@@ -16,7 +16,7 @@ push:
 restart: stop rm start
 
 start:
-	docker run -d --restart=always --log-driver=json-file --log-opt max-size=10m --log-opt max-file=10 --name $(NAME) $(REPO_URL)/$(REPO)
+	docker run -d --restart=always --log-driver=json-file --log-opt max-size=10m --log-opt max-file=10 -e "PLEX_HOST=$(PLEX_HOST)" -e "PLEX_PORT=$(PLEX_PORT)" -e "DOMOTICZ_HOST=$(DOMOTICZ_HOST)" -e "DOMOTICZ_PORT=$(DOMOTICZ_PORT)" -e "DOMOTICZ_URL=$(DOMOTICZ_URL)" -e "DOMOTICZ_IDX=$(DOMOTICZ_IDX)" -e "DOMOTICZ_VAR=$(DOMOTICZ_VAR)" --name $(NAME) $(REPO_URL)/$(REPO)
 
 stop:
 	docker stop $(NAME) || echo "Nothing to stop"
@@ -28,4 +28,4 @@ bash: CMD = bash
 bash: build run
 
 run:
-	docker run -t -i --rm --name $(NAME) $(REPO) $(CMD)
+	docker run -t -i -e "PLEX_HOST=$(PLEX_HOST)" -e "PLEX_PORT=$(PLEX_PORT)" -e "DOMOTICZ_HOST=$(DOMOTICZ_HOST)" -e "DOMOTICZ_PORT=$(DOMOTICZ_PORT)" -e "DOMOTICZ_URL=$(DOMOTICZ_URL)" -e "DOMOTICZ_IDX=$(DOMOTICZ_IDX)" -e "DOMOTICZ_VAR=$(DOMOTICZ_VAR)" --rm --name $(NAME) $(REPO) $(CMD)
