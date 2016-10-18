@@ -1,0 +1,28 @@
+{
+  "name": "domoticz-plex",
+  "version": "0.0.1",
+  "dependencies": {
+    "promise": "^7.1.1",
+    "xml2js": "^0.4.17",
+    "node-schedule": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "description": "Sends Plex status to Domoticz.",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "Plex",
+    "Domoticz",
+    "home automation"
+  ],
+  "author": "Joakim Lundin",
+  "license": "New BSD License"
+}
