@@ -20,6 +20,8 @@ var domoticzUrl = env.DOMOTICZ_URL || 'json.htm';
 var domoticzIdx = env.DOMOTICZ_IDX || '1';
 var domoticzVariable = env.DOMOTICZ_VAR || 'plex_status';
 
+var previousValue = '';
+
 var xmlFromRest = function(options) {
     return new Promise(function(resolve, reject) {
         var done = function() {
@@ -69,25 +71,32 @@ var run = function() {
     };
 
     xmlFromRest(options).then(function (xml) {
+        var status = 'IDLE';
         try {
             var title = xml.MediaContainer.Video[0].$.title;
-            var status = xml.MediaContainer.Video[0].Player[0].$.state;
+            status = xml.MediaContainer.Video[0].Player[0].$.state;
 
             if (status === undefined) {
-                status = 'idle';
+                status = 'IDLE';
             }
 
-            var text = status.charAt(0).toUpperCase() + status.slice(1) + ':' + title;
+            if (status !== previousValue) {
+                var text = status.charAt(0).toUpperCase() + status.slice(1) + ':' + title;
 
-            console.log("Video '" + title + "' playing.");
-            https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=updateuservariable&vname=" + domoticzVariable + "&vtype=2&vvalue=" +  status);
-            https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=addlogmessage&message=Video " + text);
-            https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=udevice&idx=" + domoticzIdx + "&nvalue=0&svalue=" + text);
+                console.log("Video '" + title + "' playing.");
+                https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=updateuservariable&vname=" + domoticzVariable + "&vtype=2&vvalue=" + status);
+                https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=addlogmessage&message=Video " + text);
+                https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=udevice&idx=" + domoticzIdx + "&nvalue=0&svalue=" + text);
+                previousValue = status;
+            }
         } catch (e) {
             console.log("No video playing.");
 
             try {
-                https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=udevice&idx=" + domoticzIdx + "&nvalue=0&svalue=IDLE");
+                if (status !== previousValue) {
+                    https.get("https://" + domoticzHost + ":" + domoticzPort + "/" + domoticzUrl + "?type=command&param=udevice&idx=" + domoticzIdx + "&nvalue=0&svalue=" + status);
+                    previousValue = status;
+                }
             } catch (e) {
                 console.error("Unable to send status to domoticz: " + e);
             }
